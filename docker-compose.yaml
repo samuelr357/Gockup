@@ -3,22 +3,10 @@ version: '3.8'
 services:
   mysql-backup-system:
     build: .
-    ports:
-      - "8030:8030"  # interface web
-      - "22:22"      # SSH exposto (você precisa configurar o SSH no container)
+    network_mode: "host"  # usa rede do host diretamente
     volumes:
-      - backups_data:/app/backups
-      - logs_data:/app/logs
-      - config_data:/root/.config  # volume persistente exclusivo para o .config
-    environment:
-      - MYSQL_HOST=seu_mysql_externo
-      - MYSQL_PORT=3356
-      - MYSQL_USER=admroot
-      - MYSQL_PASSWORD=c2efe3d6438743b585c996f63c76ae3c
-      - MYSQL_DATABASE=backsystem
+      - ./backups:/app/backups
+      - ./logs:/app/logs
+      - ./config:/root/.config
+      - ./ssh:/root/.ssh:ro 
     restart: unless-stopped
-
-volumes:
-  backups_data:
-  logs_data:
-  config_data:
