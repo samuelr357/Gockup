@@ -1,35 +1,34 @@
 FROM golang:1.21-alpine AS builder
 
-# Install MySQL client
 RUN apk add --no-cache mysql-client
 
 WORKDIR /app
-
-# Copy go mod files
 COPY go.mod go.sum ./
 RUN go mod download
-
-# Copy source code
 COPY . .
-
-# Build the application
 RUN go build -o mysql-backup-system main.go
 
 FROM alpine:latest
 
-# Install MySQL client and ca-certificates
-RUN apk add --no-cache mysql-client ca-certificates
+# Instala mysql-client, sshd e ca-certificates
+RUN apk add --no-cache mysql-client ca-certificates openssh
 
+# Cria pastas
 WORKDIR /app
+RUN mkdir -p /app/backups /app/logs /var/run/sshd /root/.ssh
 
-# Copy the binary from builder
+# Copia binário
 COPY --from=builder /app/mysql-backup-system .
 
-# Create directories
-RUN mkdir -p /app/backups /app/logs
+# Configura SSH
+RUN echo "root:root" | chpasswd && \
+    ssh-keygen -A && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config && \
+    echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
 
-# Expose port
-EXPOSE 8030
+# Expõe portas
+EXPOSE 8030 22
 
-# Run the application
-CMD ["./mysql-backup-system"]
+# Inicia SSH + aplicação
+CMD /usr/sbin/sshd && ./mysql-backup-system
