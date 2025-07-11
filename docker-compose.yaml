@@ -7,6 +7,6 @@ services:
     volumes:
       - ./backups:/app/backups
       - ./logs:/app/logs
-      - ./config:/root/.config
+      - ./config:/root/.mysql-backup-config
       - ./ssh:/root/.ssh:ro 
     restart: unless-stopped
