@@ -3,10 +3,10 @@ version: '3.8'
 services:
   mysql-backup-system:
     build: .
-    network_mode: "host"  # usa rede do host diretamente
+    network_mode: "host"
     volumes:
+      - ./mysql-backup-config:/root/.mysql-backup-config:ro
       - ./backups:/app/backups
       - ./logs:/app/logs
-      - ./config:/root/.mysql-backup-config
-      - ./ssh:/root/.ssh:ro 
+      - ./ssh:/root/.ssh:ro
     restart: unless-stopped
