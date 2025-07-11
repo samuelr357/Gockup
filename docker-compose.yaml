@@ -5,7 +5,6 @@ services:
     build: .
     network_mode: "host"
     volumes:
-      - ./mysql-backup-config:/root/.mysql-backup-config:ro
       - ./backups:/app/backups
       - ./logs:/app/logs
       - ./ssh:/root/.ssh:ro
