@@ -15,10 +15,11 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
 	"mysql-backup/internal/config"
 	"mysql-backup/internal/google"
 	"mysql-backup/internal/ssh"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Service struct {
@@ -52,19 +53,19 @@ func sanitizeName(name string) string {
 	// Replace spaces and special characters with underscores
 	reg := regexp.MustCompile(`[^a-zA-Z0-9_-]`)
 	sanitized := reg.ReplaceAllString(name, "_")
-	
+
 	// Remove multiple consecutive underscores
 	reg2 := regexp.MustCompile(`_+`)
 	sanitized = reg2.ReplaceAllString(sanitized, "_")
-	
+
 	// Remove leading/trailing underscores
 	sanitized = strings.Trim(sanitized, "_")
-	
+
 	// If empty after sanitization, use "server"
 	if sanitized == "" {
 		sanitized = "server"
 	}
-	
+
 	return sanitized
 }
 
@@ -108,7 +109,7 @@ func (s *Service) testRemoteMySQLService(machine *config.Machine) error {
 	// Check if MySQL is running
 	commands := []string{
 		"systemctl is-active mysql",
-		"systemctl is-active mysqld", 
+		"systemctl is-active mysqld",
 		"service mysql status",
 		"pgrep mysqld",
 		fmt.Sprintf("netstat -ln | grep :%d", machine.MySQL.Port),
@@ -413,9 +414,9 @@ func (s *Service) createBackupForMachine(ctx context.Context, machine *config.Ma
 
 func (s *Service) createSSHTunnel(machine *config.Machine) (string, func(), error) {
 	fmt.Printf("Creating SSH tunnel to %s@%s:%d\n", machine.SSH.Username, machine.SSH.Host, machine.SSH.Port)
-	
+
 	sshClient := ssh.NewClient(&machine.SSH)
-	
+
 	// Find available local port
 	listener, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
@@ -462,10 +463,10 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"-u", machine.MySQL.Username,
 		fmt.Sprintf("-p%s", machine.MySQL.Password),
 		"--skip-lock-tables",
-		"--set-gtid-purged=OFF",
 		"--single-transaction",
 		"--routines",
 		"--triggers",
+		"--skip-ssl",
 		"--events",
 		"--add-drop-database",
 		"--complete-insert",
