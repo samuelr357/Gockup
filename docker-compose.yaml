@@ -8,5 +8,5 @@ services:
       - ./backups:/app/backups
       - ./logs:/app/logs
       - ./ssh:/root/.ssh:ro
-      - ./mysql-backup-system:/app/mysql-backup-system:ro  # Adiciona essa linha
+      - ./mysql-backup-config:/root/.mysql-backup-config  # Adiciona essa linha
     restart: unless-stopped
