@@ -1,24 +1,25 @@
 FROM golang:1.21-alpine AS builder
 
-RUN apk add --no-cache mysql-client
+# Instala mysql-client (mariadb-client no caso de MariaDB)
+RUN apk add --no-cache mariadb-client
 
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
-COPY . .
+COPY . . 
 RUN go build -o mysql-backup-system main.go
 
 FROM alpine:latest
 
-# Instala mysql-client, sshd e ca-certificates
-RUN apk add --no-cache mysql-client ca-certificates openssh
+# Instala mysql-client (mariadb-client), sshd e ca-certificates
+RUN apk add --no-cache mariadb-client ca-certificates openssh
 
 # Cria pastas
 WORKDIR /app
 RUN mkdir -p /app/backups /app/logs /var/run/sshd /root/.ssh
 
 # Copia binário
-COPY --from=builder /app/mysql-backup-system .
+COPY --from=builder /app/mysql-backup-system . 
 
 # Configura SSH
 RUN echo "root:root" | chpasswd && \
@@ -31,4 +32,4 @@ RUN echo "root:root" | chpasswd && \
 EXPOSE 8030 22
 
 # Inicia SSH + aplicação
-CMD /usr/sbin/sshd && ./mysql-backup-system
+CMD /usr/sbin/sshd && ./mysql-backup-system version: '3.8'
