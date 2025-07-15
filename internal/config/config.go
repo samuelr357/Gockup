@@ -47,7 +47,7 @@ type SSHConfig struct {
 	Host       string `json:"host"`
 	Port       int    `json:"port"`
 	Username   string `json:"username"`
-	Password   string `json:"password,omitempty"`   // Adicionar este campo
+	Password   string `json:"password,omitempty"` // Adicionar este campo
 	PrivateKey string `json:"private_key"`
 	Passphrase string `json:"passphrase,omitempty"`
 	KeyPath    string `json:"key_path,omitempty"`
@@ -73,7 +73,7 @@ type Schedule struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Enabled     bool     `json:"enabled"`
-	MachineID   string   `json:"machine_id"`   // ID da máquina
+	MachineID   string   `json:"machine_id"` // ID da máquina
 	Databases   []string `json:"databases"`
 	DaysOfWeek  []int    `json:"days_of_week"` // 0=Domingo, 1=Segunda, ..., 6=Sábado
 	Times       []string `json:"times"`        // Horários no formato "15:04"
@@ -195,7 +195,7 @@ func (c *Config) Save() error {
 
 func (c *Config) encrypt(data []byte) ([]byte, error) {
 	key := c.getEncryptionKey()
-	
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -217,7 +217,7 @@ func (c *Config) encrypt(data []byte) ([]byte, error) {
 
 func (c *Config) decrypt(data []byte) ([]byte, error) {
 	key := c.getEncryptionKey()
-	
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -256,12 +256,12 @@ func (c *Config) IsGoogleAuthenticated() bool {
 func (c *Config) AddBackupLog(log BackupLog) error {
 	log.ID = fmt.Sprintf("%d", time.Now().UnixNano())
 	c.logs = append(c.logs, log)
-	
+
 	// Keep only last 1000 logs
 	if len(c.logs) > 1000 {
 		c.logs = c.logs[len(c.logs)-1000:]
 	}
-	
+
 	return c.Save()
 }
 
@@ -279,7 +279,7 @@ func (c *Config) AddMachine(machine Machine) error {
 	machine.ID = fmt.Sprintf("machine_%d", time.Now().UnixNano())
 	machine.CreatedAt = time.Now().Format(time.RFC3339)
 	machine.UpdatedAt = time.Now().Format(time.RFC3339)
-	
+
 	c.Machines = append(c.Machines, machine)
 	return c.Save()
 }
@@ -306,7 +306,7 @@ func (c *Config) DeleteMachine(machineID string) error {
 	for i, m := range c.Machines {
 		if m.ID == machineID {
 			c.Machines = append(c.Machines[:i], c.Machines[i+1:]...)
-			
+
 			// Remove schedules for this machine
 			var newSchedules []Schedule
 			for _, s := range c.Scheduler.Schedules {
@@ -315,7 +315,7 @@ func (c *Config) DeleteMachine(machineID string) error {
 				}
 			}
 			c.Scheduler.Schedules = newSchedules
-			
+
 			return c.Save()
 		}
 	}
@@ -346,7 +346,7 @@ func (c *Config) AddSchedule(schedule Schedule) error {
 	schedule.ID = fmt.Sprintf("schedule_%d", time.Now().UnixNano())
 	schedule.CreatedAt = time.Now().Format(time.RFC3339)
 	schedule.UpdatedAt = time.Now().Format(time.RFC3339)
-	
+
 	c.Scheduler.Schedules = append(c.Scheduler.Schedules, schedule)
 	return c.Save()
 }
@@ -408,7 +408,7 @@ func getDefaultConfigPath() string {
 	if err != nil {
 		return ".mysql-backup-config"
 	}
-	return filepath.Join(homeDir, ".mysql-backup-config")
+	return filepath.Join(homeDir, "config/.mysql-backup-config")
 }
 
 func getDefaultBackupPath() string {
