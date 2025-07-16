@@ -9,4 +9,4 @@ services:
       - ./logs:/app/logs
       - ./ssh:/root/.ssh:ro
       - ./config:/root/config
-    restart: unless-stopped
+    restart: always
