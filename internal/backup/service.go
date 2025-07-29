@@ -563,7 +563,7 @@ func (s *Service) compressFileGzip(srcPath, dstPath string) error {
 	defer dstFile.Close()
 
 	// Use gzip compression with maximum compression (-9)
-	cmd := exec.Command("gzip", "-9", "-c")
+	cmd := exec.Command("gzip", "-c")
 	cmd.Stdin = srcFile
 	cmd.Stdout = dstFile
 	cmd.Stderr = os.Stderr
