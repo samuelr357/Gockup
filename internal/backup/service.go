@@ -476,7 +476,7 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		database,
 	}
 
-	cmd := exec.Command("mysqldump", args...)
+	cmd := exec.Command("mariadb-dump", args...)
 
 	fmt.Printf("Executing COMPLETE mysqldump (including problematic views)\n")
 
