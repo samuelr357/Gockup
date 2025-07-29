@@ -446,16 +446,14 @@ func (s *Service) createSSHTunnel(machine *config.Machine) (string, func(), erro
 }
 
 func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, filePath string, mysqlHost string, mysqlPort int) error {
-	fmt.Printf("Creating COMPLETE backup for database: %s on machine %s\n", database, machine.Name)
+	fmt.Printf("Creating COMPLETE backup for database: %s on machine: %s\n", database, machine.Name)
 	fmt.Printf("Output file: %s\n", filePath)
 	fmt.Printf("MySQL connection: %s@%s:%d\n", machine.MySQL.Username, mysqlHost, mysqlPort)
 
-	// Verificar se mysqldump está disponível
 	if _, err := exec.LookPath("mysqldump"); err != nil {
 		return fmt.Errorf("mysqldump not found in PATH: %w", err)
 	}
 
-	// Parâmetros para backup COMPLETO (incluindo views problemáticas)
 	args := []string{
 		"--protocol=TCP",
 		"-h", mysqlHost,
@@ -475,25 +473,22 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		database,
 	}
 
-	cmd := exec.Command("mariadb-dump", args...)
+	cmd := exec.Command("mysqldump", args...)
+	fmt.Println("Executing mysqldump with the following parameters:")
+	fmt.Println(strings.Join(args, " "))
 
-	fmt.Printf("Executing COMPLETE mysqldump (including problematic views)\n")
-
-	// Capturar stdout e stderr separadamente
 	var stdout, stderr strings.Builder
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	err := cmd.Run()
 
-	// Mostrar stderr (warnings são normais)
 	if stderr.Len() > 0 {
 		fmt.Printf("mysqldump warnings/errors: %s\n", stderr.String())
 	}
 
-	// Com --force, mesmo com erros em views, o backup continua
 	if err != nil {
-		fmt.Printf("mysqldump had errors but continuing due to --force flag: %v\n", err)
+		return fmt.Errorf("mysqldump failed: %w", err)
 	}
 
 	output := stdout.String()
@@ -503,10 +498,14 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		return fmt.Errorf("mysqldump produced empty output")
 	}
 
-	// Filtrar DEFINERs para evitar problemas de permissão
 	filteredOutput := strings.ReplaceAll(output, "DEFINER=", "-- DEFINER=")
 
-	return os.WriteFile(filePath, []byte(filteredOutput), 0644)
+	if err := os.WriteFile(filePath, []byte(filteredOutput), 0644); err != nil {
+		return fmt.Errorf("failed to write dump file: %w", err)
+	}
+
+	fmt.Printf("Backup completed successfully. Dump file saved at: %s\n", filePath)
+	return nil
 }
 
 // Backward compatibility methods
