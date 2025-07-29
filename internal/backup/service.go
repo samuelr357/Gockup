@@ -471,7 +471,7 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--add-drop-database",
 		"--complete-insert",
 		"--extended-insert",
-		"--force", // Continua mesmo com erros em views
+		"--skip-foreign-key-checks",
 		"--databases",
 		database,
 	}
