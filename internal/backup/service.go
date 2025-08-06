@@ -468,7 +468,6 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--add-drop-database",
 		"--complete-insert",
 		"--extended-insert",
-		"--set-gtid-purged=OFF",
 		"--disable-keys",
 		"--max-allowed-packet=64M",
 		"--no-tablespaces",
