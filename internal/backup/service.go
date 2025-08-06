@@ -446,16 +446,14 @@ func (s *Service) createSSHTunnel(machine *config.Machine) (string, func(), erro
 }
 
 func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, filePath string, mysqlHost string, mysqlPort int) error {
-	fmt.Printf("Creating COMPLETE backup for database: %s on machine %s\n", database, machine.Name)
+	fmt.Printf("Creating COMPLETE backup for database: %s on machine: %s\n", database, machine.Name)
 	fmt.Printf("Output file: %s\n", filePath)
 	fmt.Printf("MySQL connection: %s@%s:%d\n", machine.MySQL.Username, mysqlHost, mysqlPort)
 
-	// Verificar se mariadb-dump está disponível
 	if _, err := exec.LookPath("mariadb-dump"); err != nil {
 		return fmt.Errorf("mariadb-dump not found in PATH: %w", err)
 	}
 
-	// Parâmetros para backup COMPLETO (incluindo views problemáticas)
 	args := []string{
 		"--protocol=TCP",
 		"-h", mysqlHost,
@@ -466,35 +464,34 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--single-transaction",
 		"--routines",
 		"--triggers",
-		"--skip-ssl",
 		"--events",
 		"--add-drop-database",
 		"--complete-insert",
 		"--extended-insert",
-		"--force", // Continua mesmo com erros em views
+		"--set-gtid-purged=OFF",
+		"--disable-keys",
+		"--max-allowed-packet=64M",
+		"--no-tablespaces",
 		"--databases",
 		database,
 	}
 
 	cmd := exec.Command("mariadb-dump", args...)
+	fmt.Println("Executing mariadb-dump with the following parameters:")
+	fmt.Println(strings.Join(args, " "))
 
-	fmt.Printf("Executing COMPLETE mariadb-dump (including problematic views)\n")
-
-	// Capturar stdout e stderr separadamente
 	var stdout, stderr strings.Builder
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	err := cmd.Run()
 
-	// Mostrar stderr (warnings são normais)
 	if stderr.Len() > 0 {
 		fmt.Printf("mariadb-dump warnings/errors: %s\n", stderr.String())
 	}
 
-	// Com --force, mesmo com erros em views, o backup continua
 	if err != nil {
-		fmt.Printf("mariadb-dump had errors but continuing due to --force flag: %v\n", err)
+		return fmt.Errorf("mariadb-dump failed: %w", err)
 	}
 
 	output := stdout.String()
@@ -504,10 +501,14 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		return fmt.Errorf("mariadb-dump produced empty output")
 	}
 
-	// Filtrar DEFINERs para evitar problemas de permissão
 	filteredOutput := strings.ReplaceAll(output, "DEFINER=", "-- DEFINER=")
 
-	return os.WriteFile(filePath, []byte(filteredOutput), 0644)
+	if err := os.WriteFile(filePath, []byte(filteredOutput), 0644); err != nil {
+		return fmt.Errorf("failed to write dump file: %w", err)
+	}
+
+	fmt.Printf("Backup completed successfully. Dump file saved at: %s\n", filePath)
+	return nil
 }
 
 // Backward compatibility methods
@@ -565,7 +566,7 @@ func (s *Service) compressFileGzip(srcPath, dstPath string) error {
 	defer dstFile.Close()
 
 	// Use gzip compression with maximum compression (-9)
-	cmd := exec.Command("gzip", "-9", "-c")
+	cmd := exec.Command("gzip", "-c")
 	cmd.Stdin = srcFile
 	cmd.Stdout = dstFile
 	cmd.Stderr = os.Stderr
