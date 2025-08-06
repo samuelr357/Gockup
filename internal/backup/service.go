@@ -450,9 +450,9 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 	fmt.Printf("Output file: %s\n", filePath)
 	fmt.Printf("MySQL connection: %s@%s:%d\n", machine.MySQL.Username, mysqlHost, mysqlPort)
 
-	// Verificar se mysqldump está disponível
-	if _, err := exec.LookPath("mysqldump"); err != nil {
-		return fmt.Errorf("mysqldump not found in PATH: %w", err)
+	// Verificar se mariadb-dump está disponível
+	if _, err := exec.LookPath("mariadb-dump"); err != nil {
+		return fmt.Errorf("mariadb-dump not found in PATH: %w", err)
 	}
 
 	// Parâmetros para backup COMPLETO (incluindo views problemáticas)
@@ -476,9 +476,9 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		database,
 	}
 
-	cmd := exec.Command("mysqldump", args...)
+	cmd := exec.Command("mariadb-dump", args...)
 
-	fmt.Printf("Executing COMPLETE mysqldump (including problematic views)\n")
+	fmt.Printf("Executing COMPLETE mariadb-dump (including problematic views)\n")
 
 	// Capturar stdout e stderr separadamente
 	var stdout, stderr strings.Builder
@@ -489,19 +489,19 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 
 	// Mostrar stderr (warnings são normais)
 	if stderr.Len() > 0 {
-		fmt.Printf("mysqldump warnings/errors: %s\n", stderr.String())
+		fmt.Printf("mariadb-dump warnings/errors: %s\n", stderr.String())
 	}
 
 	// Com --force, mesmo com erros em views, o backup continua
 	if err != nil {
-		fmt.Printf("mysqldump had errors but continuing due to --force flag: %v\n", err)
+		fmt.Printf("mariadb-dump had errors but continuing due to --force flag: %v\n", err)
 	}
 
 	output := stdout.String()
-	fmt.Printf("mysqldump output size: %d bytes\n", len(output))
+	fmt.Printf("mariadb-dump output size: %d bytes\n", len(output))
 
 	if len(output) == 0 {
-		return fmt.Errorf("mysqldump produced empty output")
+		return fmt.Errorf("mariadb-dump produced empty output")
 	}
 
 	// Filtrar DEFINERs para evitar problemas de permissão

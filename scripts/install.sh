@@ -13,8 +13,8 @@ if ! command -v go &> /dev/null; then
 fi
 
 # Check if MySQL client is installed
-if ! command -v mysqldump &> /dev/null; then
-    echo "MySQL client (mysqldump) is not installed. Please install MySQL client."
+if ! command -v mariadb-dump &> /dev/null; then
+    echo "MySQL client (mariadb-dump) is not installed. Please install MySQL client."
     exit 1
 fi
 
