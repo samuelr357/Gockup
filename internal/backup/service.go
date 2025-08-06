@@ -471,6 +471,7 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--disable-keys",
 		"--max-allowed-packet=64M",
 		"--no-tablespaces",
+		"--ssl-mode=DISABLED", // Desabilitar SSL
 		"--databases",
 		database,
 	}
