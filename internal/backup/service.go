@@ -468,7 +468,7 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--force",
 		"--quick",
 		"--max_allowed_packet=64M",
-		"--ssl-mode=DISABLED",
+		"--skip-ssl",
 		"--databases",
 		database,
 	}
