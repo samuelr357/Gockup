@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 # Instalar o mariadb-client (mariadb-dump) e tzdata para configuração de fuso horário
 RUN apk add --no-cache mariadb-client tzdata
@@ -16,7 +16,7 @@ RUN go build -o mysql-backup-system main.go
 FROM alpine:latest
 
 # Instalar o mariadb-client (mariadb-dump), openssh, ca-certificates e tzdata
-RUN apk add --no-cache mariadb-client ca-certificates openssh tzdata
+RUN apk add --no-cache mariadb-client ca-certificates openssh tzdata mysql-client
 
 # Configurar o fuso horário para o Brasil (GMT-3)
 RUN cp /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && \

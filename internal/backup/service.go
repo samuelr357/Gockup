@@ -450,8 +450,8 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 	fmt.Printf("Output file: %s\n", filePath)
 	fmt.Printf("MySQL connection: %s@%s:%d\n", machine.MySQL.Username, mysqlHost, mysqlPort)
 
-	if _, err := exec.LookPath("mariadb-dump"); err != nil {
-		return fmt.Errorf("mariadb-dump not found in PATH: %w", err)
+	if _, err := exec.LookPath("mysqldump"); err != nil {
+		return fmt.Errorf("mysqldump not found in PATH: %w", err)
 	}
 
 	args := []string{
@@ -471,11 +471,10 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--skip-ssl",
 		"--databases",
 		database,
-		"--set-gtid-purged=OFF",
 	}
 
-	cmd := exec.Command("mariadb-dump", args...)
-	fmt.Println("Executing mariadb-dump with the following parameters:")
+	cmd := exec.Command("mysqldump", args...)
+	fmt.Println("Executing mysqldump with the following parameters:")
 	fmt.Println(strings.Join(args, " "))
 
 	var stdout, stderr strings.Builder
@@ -485,18 +484,18 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 	err := cmd.Run()
 
 	if stderr.Len() > 0 {
-		fmt.Printf("mariadb-dump warnings/errors: %s\n", stderr.String())
+		fmt.Printf("mysqldump warnings/errors: %s\n", stderr.String())
 	}
 
 	if err != nil {
-		return fmt.Errorf("mariadb-dump failed: %w", err)
+		return fmt.Errorf("mysqldump failed: %w", err)
 	}
 
 	output := stdout.String()
-	fmt.Printf("mariadb-dump output size: %d bytes\n", len(output))
+	fmt.Printf("mysqldump output size: %d bytes\n", len(output))
 
 	if len(output) == 0 {
-		return fmt.Errorf("mariadb-dump produced empty output")
+		return fmt.Errorf("mysqldump produced empty output")
 	}
 
 	filteredOutput := strings.ReplaceAll(output, "DEFINER=", "-- DEFINER=")
