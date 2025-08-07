@@ -1,7 +1,8 @@
-FROM golang:1.24-alpine AS builder
+# Etapa de build com a imagem do Golang
+FROM golang:1.24 AS builder
 
 # Instalar o mariadb-client (mariadb-dump) e tzdata para configuração de fuso horário
-RUN apk add --no-cache mariadb-client tzdata
+RUN apt-get update && apt-get install -y mariadb-client tzdata
 
 # Configurar o fuso horário para o Brasil (GMT-3)
 RUN cp /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && \
@@ -13,10 +14,11 @@ RUN go mod download
 COPY . . 
 RUN go build -o mysql-backup-system main.go
 
-FROM alpine:latest
+# Etapa de runtime com a imagem Debian
+FROM debian:latest
 
 # Instalar o mariadb-client (mariadb-dump), openssh, ca-certificates e tzdata
-RUN apk add --no-cache mariadb-client ca-certificates openssh tzdata mysql-client
+RUN apt-get update && apt-get install -y mariadb-client openssh-server ca-certificates tzdata
 
 # Configurar o fuso horário para o Brasil (GMT-3)
 RUN cp /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && \
@@ -28,7 +30,7 @@ RUN mkdir -p /app/backups /app/logs /var/run/sshd /root/.ssh
 WORKDIR /app
 
 # Copiar o binário gerado na etapa de builder
-COPY --from=builder /app/mysql-backup-system . 
+COPY --from=builder /app/mysql-backup-system .
 
 # Configuração do SSH
 RUN echo "root:root" | chpasswd && \
