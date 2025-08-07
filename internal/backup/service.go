@@ -498,7 +498,8 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		return fmt.Errorf("mysqldump produced empty output")
 	}
 
-	filteredOutput := strings.ReplaceAll(output, "DEFINER=", "-- DEFINER=")
+	// Adding the disable foreign key check to the output
+	filteredOutput := "SET foreign_key_checks = 0;\n" + output + "\nSET foreign_key_checks = 1;"
 
 	if err := os.WriteFile(filePath, []byte(filteredOutput), 0644); err != nil {
 		return fmt.Errorf("failed to write dump file: %w", err)
