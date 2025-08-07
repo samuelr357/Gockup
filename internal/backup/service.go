@@ -464,7 +464,6 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--routines",
 		"--triggers",
 		"--no-tablespaces",
-		"--all-databases",
 		"--default-character-set=utf8mb4",
 		"--force",
 		"--quick",
