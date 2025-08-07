@@ -471,6 +471,7 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--skip-ssl",
 		"--databases",
 		database,
+		"--set-gtid-purged=OFF",
 	}
 
 	cmd := exec.Command("mariadb-dump", args...)
