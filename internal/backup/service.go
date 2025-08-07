@@ -471,6 +471,7 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--skip-ssl",
 		"--databases",
 		database,
+		"--skip-triggers",
 	}
 
 	cmd := exec.Command("mysqldump", args...)
