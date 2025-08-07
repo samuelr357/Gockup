@@ -468,7 +468,6 @@ func (s *Service) dumpDatabaseForMachine(machine *config.Machine, database, file
 		"--force",
 		"--quick",
 		"--max_allowed_packet=64M",
-		"--set-gtid-purged=OFF",
 		"--databases",
 		database,
 	}
